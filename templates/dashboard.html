@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Jithu Bank</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+  <style>
+    /* Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body.dashboard-body {
+      font-family: 'Poppins', sans-serif;
+      background: #0c0f1d;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Header */
+    header {
+      flex-shrink: 0;
+      background: rgba(0, 0, 0, 0.9);
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header h1 {
+      font-size: 22px;
+      color: #FFD700;
+    }
+
+    /* Navigation Links */
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    nav a {
+      color: #FFD700;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s;
+    }
+
+    nav a:hover {
+      color: #FF8C00;
+    }
+
+    /* Logout Button */
+    .logout-btn {
+      background: #FF4500;
+      color: #fff;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    .logout-btn:hover {
+      background: #ff6347;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      background: #FFD700;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #000;
+      transition: 0.3s;
+    }
+    .theme-toggle:hover {
+      background: #FF8C00;
+      color: #fff;
+    }
+
+    /* Scrollable Content */
+    .dashboard-content {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 20px;
+      scroll-behavior: smooth;
+    }
+
+    /* Custom Scrollbar */
+    .dashboard-content::-webkit-scrollbar {
+      width: 8px;
+    }
+    .dashboard-content::-webkit-scrollbar-thumb {
+      background: #FFD700;
+      border-radius: 4px;
+    }
+
+    /* News Ticker */
+    .news-ticker {
+      background: rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 8px;
+      margin-bottom: 20px;
+      overflow: hidden;
+      white-space: nowrap;
+      font-weight: bold;
+      color: #FFD700;
+      position: relative;
+    }
+    .news-ticker span {
+      display: inline-block;
+      padding-left: 100%;
+      animation: tickerScroll 15s linear infinite;
+    }
+    @keyframes tickerScroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
+    }
+
+    /* Balance Card */
+    .balance-card {
+      background: linear-gradient(135deg, #FFD700, #FF8C00);
+      color: #000;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      margin-bottom: 20px;
+    }
+
+    /* Grid Layout */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 20px;
+    }
+
+    /* Transaction History */
+    .transaction-history {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 15px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .transaction-history table {
+      width: 100%;
+      border-collapse: collapse;
+      color: inherit;
+    }
+    .transaction-history th, 
+    .transaction-history td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    .transaction-history::-webkit-scrollbar {
+      width: 6px;
+    }
+    .transaction-history::-webkit-scrollbar-thumb {
+      background: #FFD700;
+      border-radius: 4px;
+    }
+
+    /* Goals Tracker */
+    .goal-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 15px;
+    }
+    .progress-bar {
+      background: #444;
+      border-radius: 8px;
+      overflow: hidden;
+      height: 12px;
+      margin: 6px 0 12px;
+    }
+    .progress-fill {
+      background: #FFD700;
+      height: 100%;
+      width: 0;
+      transition: width 1s ease;
+    }
+
+    /* Loan Carousel */
+    .loan-carousel {
+      display: flex;
+      overflow-x: auto;
+      gap: 15px;
+      padding: 10px 0;
+    }
+    .loan-item {
+      flex: 0 0 auto;
+      min-width: 250px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      text-align: center;
+      padding: 15px;
+      transition: transform 0.3s;
+    }
+    .loan-item:hover {
+      transform: scale(1.05);
+    }
+
+    /* Footer */
+    footer {
+      flex-shrink: 0;
+      text-align: center;
+      padding: 12px;
+      background: rgba(0,0,0,0.9);
+      color: #aaa;
+    }
+  </style>
+</head>
+<body class="dashboard-body">
+
+  <!-- Header -->
+  <header>
+    <h1>Welcome, {{ user.username }} 👋</h1>
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <nav>
+        <a href="{{ url_for('deposit') }}">Deposit</a>
+        <a href="{{ url_for('withdraw') }}">Withdraw</a>
+        <a href="{{ url_for('transfer') }}">Transfer</a>
+        <a href="{{ url_for('transactions') }}">Transactions</a>
+      </nav>
+      <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
+      <form action="{{ url_for('logout') }}" method="POST" style="display:inline;">
+        <button type="submit" class="logout-btn">Logout</button>
+      </form>
+    </div>
+  </header>
+
+  <!-- Scrollable Main Content -->
+  <div class="dashboard-content">
+
+    <!-- News Ticker -->
+    <div class="news-ticker">
+      <span>📢 RBI cuts repo rate to 5.75% | 💹 Bitcoin surges past $65,000 | 🌍 Forex USD/INR = 83.12 | 💰 New FD scheme at 8.5% interest</span>
+    </div>
+
+    <!-- Balance -->
+    <div class="balance-card">
+      Current Balance: ₹{{ "%.2f"|format(user.balance) }}
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid">
+      <!-- Transactions -->
+      <div class="transaction-history">
+        <h3>Recent Transactions</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="txn-body">
+            {% for txn in transactions %}
+            <tr>
+              <td>{{ txn.date }}</td>
+              <td>{{ txn.type }}</td>
+              <td>₹{{ "%.2f"|format(txn.amount) }}</td>
+              <td>{{ txn.status }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Spending Analytics -->
+      <div>
+        <h3>Spending Analytics</h3>
+        <canvas id="spendingChart"></canvas>
+      </div>
+
+      <!-- Goals Tracker -->
+      <div class="goal-card">
+        <h3>Goals Tracker</h3>
+        <p>Vacation Fund</p>
+        <div class="progress-bar"><div class="progress-fill" style="width: 70%;"></div></div>
+
+        <p>Emergency Fund</p>
+        <div class="progress-bar"><div class="progress-fill" style="width: 40%;"></div></div>
+
+        <p>New Car</p>
+        <div class="progress-bar"><div class="progress-fill" style="width: 55%;"></div></div>
+      </div>
+    </div>
+
+    <!-- Loan Offers -->
+    <h3 style="margin-top: 30px;">Exclusive Loan Offers</h3>
+    <div class="loan-carousel">
+      <div class="loan-item">
+        <h4>🏡 Home Loan</h4>
+        <p>Interest: 7.2%</p>
+        <button>Apply Now</button>
+      </div>
+      <div class="loan-item">
+        <h4>🚗 Car Loan</h4>
+        <p>Interest: 8.5%</p>
+        <button>Apply Now</button>
+      </div>
+      <div class="loan-item">
+        <h4>🎓 Education Loan</h4>
+        <p>Interest: 6.9%</p>
+        <button>Apply Now</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    © 2025 Jithu Bank. All Rights Reserved.
+  </footer>
+
+  <!-- Scripts -->
+  <script>
+    // Toggle Theme
+    function toggleTheme() {
+      document.body.classList.toggle('light-mode');
+    }
+
+    // Spending Analytics Chart
+    const ctx = document.getElementById('spendingChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Groceries', 'Bills', 'Shopping', 'Travel', 'Others'],
+        datasets: [{
+          data: [5000, 2500, 3000, 1500, 2000],
+          backgroundColor: ['#FFD700', '#FF8C00', '#FF4500', '#ADFF2F', '#1E90FF']
+        }]
+      }
+    });
+  </script>
+</body>
+</html>
